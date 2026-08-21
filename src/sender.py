@@ -14,11 +14,10 @@ class DMSender:
         """Return username -> alias mapping for agents."""
         return self._config.aliases
 
-    def send_dm(self, recipient: str, message: str | None = None) -> bool:
+    def send_dm(self, recipient: str, message: str) -> bool:
         """Send message to a specific recipient. Returns True if successful."""
-        text = message or self._config.message_text
         user_id = self._client.get_user_id(recipient)
-        self._client.send_dm(text, [user_id])
+        self._client.send_dm(message, [user_id])
         print(f"Sent to {recipient}")
         return True
 

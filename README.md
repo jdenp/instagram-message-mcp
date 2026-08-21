@@ -18,13 +18,14 @@ The server communicates via JSON-RPC 2.0 over stdin/stdout.
 
 ## Tools
 
-### send_dm(recipient, message="test")
+### send_dm(recipient, message)
 
 Send a DM to a specific recipient.
 
 **Parameters:**
 
-- `message` (optional) - Message text to send (uses `message_text` from config if omitted)
+- `recipient` (required) - Instagram username to send the DM to
+- `message` (required) - Message text to send
 
 ### read_dm(recipient, max_messages=10)
 

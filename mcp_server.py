@@ -72,10 +72,10 @@ class InstagramMCP:
                         },
                         "message": {
                             "type": "string",
-                            "description": "Message text to send (uses config message_text if omitted)",
+                            "description": "Message text to send",
                         },
                     },
-                    "required": ["recipient"],
+                    "required": ["recipient", "message"],
                 },
             },
             {
@@ -140,7 +140,9 @@ class InstagramMCP:
         recipient = args.get("recipient")
         if not recipient:
             return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32602, "message": "Missing required field: recipient"}}
-        message = args.get("message") or self.config.message_text
+        message = args.get("message")
+        if not message:
+            return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32602, "message": "Missing required field: message"}}
         success = self.sender.send_dm(recipient, message)
         result = f"Sent to {recipient}: {'ok' if success else 'failed'}"
         return {"jsonrpc": "2.0", "id": request_id, "result": {"content": [{"type": "text", "text": result}]}}
