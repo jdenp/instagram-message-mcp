@@ -62,16 +62,20 @@ class InstagramMCP:
         tools = [
             {
                 "name": "send_dm",
-                "description": "Send a DM to all recipients in recipients.json",
+                "description": "Send a DM to a specific recipient",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
+                        "recipient": {
+                            "type": "string",
+                            "description": "Instagram username to send the DM to",
+                        },
                         "message": {
                             "type": "string",
                             "description": "Message text to send (uses config message_text if omitted)",
                         },
                     },
-                    "required": [],
+                    "required": ["recipient"],
                 },
             },
             {
@@ -133,9 +137,12 @@ class InstagramMCP:
 
     def _handle_send_dm(self, args: dict, request_id: int) -> dict:
         """Handle send_dm tool call."""
+        recipient = args.get("recipient")
+        if not recipient:
+            return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32602, "message": "Missing required field: recipient"}}
         message = args.get("message") or self.config.message_text
-        sent = self.sender.send(message)
-        result = f"Sent to {len(sent)} recipient(s): {', '.join(sent)}"
+        success = self.sender.send_dm(recipient, message)
+        result = f"Sent to {recipient}: {'ok' if success else 'failed'}"
         return {"jsonrpc": "2.0", "id": request_id, "result": {"content": [{"type": "text", "text": result}]}}
 
     def _handle_read_dm(self, args: dict, request_id: int) -> dict:

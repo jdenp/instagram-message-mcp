@@ -14,16 +14,13 @@ class DMSender:
         """Return username -> alias mapping for agents."""
         return self._config.aliases
 
-    def send(self, message: str | None = None) -> list[str]:
-        """Send message to all recipients. Returns list of usernames that succeeded."""
+    def send_dm(self, recipient: str, message: str | None = None) -> bool:
+        """Send message to a specific recipient. Returns True if successful."""
         text = message or self._config.message_text
-        sent: list[str] = []
-        for recipient in self._config.recipients:
-            user_id = self._client.get_user_id(recipient)
-            self._client.send_dm(text, [user_id])
-            print(f"Sent to {recipient}")
-            sent.append(recipient)
-        return sent
+        user_id = self._client.get_user_id(recipient)
+        self._client.send_dm(text, [user_id])
+        print(f"Sent to {recipient}")
+        return True
 
     def read_dm(self, recipient: str, max_messages: int = 10) -> dict[str, list[DMMessage]]:
         """Read last N messages from a specific recipient's thread."""

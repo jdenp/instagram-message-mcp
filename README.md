@@ -18,9 +18,9 @@ The server communicates via JSON-RPC 2.0 over stdin/stdout.
 
 ## Tools
 
-### send_dm(message="test")
+### send_dm(recipient, message="test")
 
-Send a DM to all recipients in `recipients.json`.
+Send a DM to a specific recipient.
 
 **Parameters:**
 
