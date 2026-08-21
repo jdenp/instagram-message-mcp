@@ -1,0 +1,13 @@
+[project]
+name = "instagram-message-mcp"
+version = "0.0.1"
+description = "MCP server for Instagram DM operations"
+requires-python = ">=3.12"
+dependencies = ["instagrapi"]
+
+[tool.uv]
+dev-dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

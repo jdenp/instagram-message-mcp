@@ -1,0 +1,20 @@
+# Config files with secrets
+config.json
+recipients.json
+
+# Session data
+*.session
+instagram_session.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
