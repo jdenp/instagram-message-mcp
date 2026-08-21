@@ -25,9 +25,6 @@ class DMSender:
             sent.append(recipient)
         return sent
 
-    def read_dms(self) -> dict[str, list[DMMessage]]:
-        """Read last N messages from threads involving recipients."""
-        return self._client.read_dms(
-            self._config.recipients,
-            self._config.max_messages_per_thread,
-        )
+    def read_dm(self, recipient: str, max_messages: int = 10) -> dict[str, list[DMMessage]]:
+        """Read last N messages from a specific recipient's thread."""
+        return self._client.read_dms([recipient], max_messages)

@@ -45,12 +45,13 @@ Send a DM to all recipients in `recipients.json`.
 
 - `message` (optional) - Message text to send (uses `message_text` from config if omitted)
 
-### read_dms
+### read_dm
 
-Read the last N messages from recipient threads.
+Read the last N messages from a specific recipient's thread.
 
 **Parameters:**
 
+- `recipient` (required) - Instagram username to read DMs from
 - `max_messages` (optional) - Max messages per thread (uses `max_messages_per_thread` from config if omitted)
 
 ### list_recipients

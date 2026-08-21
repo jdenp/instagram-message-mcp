@@ -3,12 +3,26 @@
 
 import json
 import sys
+from importlib.metadata import PackageNotFoundError, version as get_version
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.config import Config, ConfigError
 from src.sender import DMSender
+
+
+def _get_version() -> str:
+    """Get package version from pyproject.toml metadata."""
+    try:
+        return get_version("instagram-message-mcp")
+    except PackageNotFoundError:
+        # Fallback: read from pyproject.toml directly
+        pyproject = Path(__file__).parent / "pyproject.toml"
+        for line in pyproject.read_text().splitlines():
+            if line.startswith('version = '):
+                return line.split('"')[1]
+        return "0.0.0"
 
 
 def _format_dms(dms: dict) -> str:
@@ -39,7 +53,7 @@ class InstagramMCP:
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "instagram-mcp", "version": "0.0.2"},
+                "serverInfo": {"name": "instagram-mcp", "version": _get_version()},
             },
         }
 
@@ -61,17 +75,21 @@ class InstagramMCP:
                 },
             },
             {
-                "name": "read_dms",
-                "description": "Read last N messages from recipient threads",
+                "name": "read_dm",
+                "description": "Read last N messages from a specific recipient's thread",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
+                        "recipient": {
+                            "type": "string",
+                            "description": "Instagram username to read DMs from",
+                        },
                         "max_messages": {
                             "type": "integer",
                             "description": "Max messages per thread (uses config max_messages_per_thread if omitted)",
                         },
                     },
-                    "required": [],
+                    "required": ["recipient"],
                 },
             },
             {
@@ -96,8 +114,8 @@ class InstagramMCP:
         try:
             if tool_name == "send_dm":
                 return self._handle_send_dm(arguments, request_id)
-            elif tool_name == "read_dms":
-                return self._handle_read_dms(arguments, request_id)
+            elif tool_name == "read_dm":
+                return self._handle_read_dm(arguments, request_id)
             elif tool_name == "list_recipients":
                 return self._handle_list_recipients(request_id)
             else:
@@ -120,10 +138,13 @@ class InstagramMCP:
         result = f"Sent to {len(sent)} recipient(s): {', '.join(sent)}"
         return {"jsonrpc": "2.0", "id": request_id, "result": {"content": [{"type": "text", "text": result}]}}
 
-    def _handle_read_dms(self, args: dict, request_id: int) -> dict:
-        """Handle read_dms tool call."""
+    def _handle_read_dm(self, args: dict, request_id: int) -> dict:
+        """Handle read_dm tool call."""
+        recipient = args.get("recipient")
+        if not recipient:
+            return {"jsonrpc": "2.0", "id": request_id, "error": {"code": -32602, "message": "Missing required field: recipient"}}
         max_messages = args.get("max_messages") or self.config.max_messages_per_thread
-        dms = self.sender.read_dms()
+        dms = self.sender.read_dm(recipient, max_messages)
         formatted = _format_dms(dms)
         return {"jsonrpc": "2.0", "id": request_id, "result": {"content": [{"type": "text", "text": formatted}]}}
 
