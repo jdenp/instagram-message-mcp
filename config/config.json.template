@@ -1,0 +1,6 @@
+{
+    "sessionid": "YOUR_SESSION_ID_HERE",
+    "username": "",
+    "message_text": "Hello from Instagram MCP!",
+    "max_messages_per_thread": 10
+}

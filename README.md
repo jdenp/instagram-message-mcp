@@ -12,8 +12,28 @@ The server communicates via JSON-RPC 2.0 over stdin/stdout.
 
 ## Setup
 
-1. Edit `config.json` - add your `sessionid`, optional `username`, and `max_messages_per_thread`.
-2. Edit `recipients.json` - list of Instagram usernames to send to or read from.
+1. Copy `config/config.json.template` to `config/config.json` — add your `sessionid`, optional `username`, and `max_messages_per_thread`.
+2. Copy `config/recipients.json.template` to `config/recipients.json` — list of Instagram usernames with optional aliases.
+3. The `.json` files are gitignored; the `.template` files are tracked as guides.
+
+## Recipient Aliases
+
+In `recipients.json`, each entry can include an `alias` field for agents to use:
+
+```json
+[
+    {
+        "username": "john_doe",
+        "alias": "John Doe"
+    }
+]
+```
+
+The alias is optional — if omitted, the username is used. Use the `list_recipients` tool to see all configured aliases. Plain string entries (backwards compat) are also supported:
+
+```json
+["john_doe", "jane_smith"]
+```
 
 ## Tools
 
@@ -32,6 +52,12 @@ Read the last N messages from recipient threads.
 **Parameters:**
 
 - `max_messages` (optional) - Max messages per thread (uses `max_messages_per_thread` from config if omitted)
+
+### list_recipients
+
+List all configured recipients with their aliases. Agents should use this tool to discover who they can message.
+
+**Parameters:** None
 
 ## Config
 

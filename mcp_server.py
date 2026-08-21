@@ -39,7 +39,7 @@ class InstagramMCP:
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "instagram-mcp", "version": "1.0.0"},
+                "serverInfo": {"name": "instagram-mcp", "version": "0.0.2"},
             },
         }
 
@@ -74,6 +74,15 @@ class InstagramMCP:
                     "required": [],
                 },
             },
+            {
+                "name": "list_recipients",
+                "description": "List all recipients with their aliases for agents to use",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            },
         ]
         return {"jsonrpc": "2.0", "id": request_id, "result": {"tools": tools}}
 
@@ -89,6 +98,8 @@ class InstagramMCP:
                 return self._handle_send_dm(arguments, request_id)
             elif tool_name == "read_dms":
                 return self._handle_read_dms(arguments, request_id)
+            elif tool_name == "list_recipients":
+                return self._handle_list_recipients(request_id)
             else:
                 return {
                     "jsonrpc": "2.0",
@@ -115,6 +126,18 @@ class InstagramMCP:
         dms = self.sender.read_dms()
         formatted = _format_dms(dms)
         return {"jsonrpc": "2.0", "id": request_id, "result": {"content": [{"type": "text", "text": formatted}]}}
+
+    def _handle_list_recipients(self, request_id: int) -> dict:
+        """Handle list_recipients tool call."""
+        aliases = self.sender.aliases
+        if not aliases:
+            result_text = "No recipients configured."
+        else:
+            lines = ["Recipients (username -> alias):"]
+            for username, alias in aliases.items():
+                lines.append(f"  {username} -> {alias}")
+            result_text = "\n".join(lines)
+        return {"jsonrpc": "2.0", "id": request_id, "result": {"content": [{"type": "text", "text": result_text}]}}
 
     def process_request(self, request: dict) -> dict | None:
         """Process a JSON-RPC request and return response."""

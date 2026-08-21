@@ -9,6 +9,11 @@ class DMSender:
         self._config = config
         self._client = InstagramClient(config.sessionid)
 
+    @property
+    def aliases(self) -> dict[str, str]:
+        """Return username -> alias mapping for agents."""
+        return self._config.aliases
+
     def send(self, message: str | None = None) -> list[str]:
         """Send message to all recipients. Returns list of usernames that succeeded."""
         text = message or self._config.message_text

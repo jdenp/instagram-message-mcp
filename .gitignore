@@ -1,6 +1,6 @@
 # Config files with secrets
-config.json
-recipients.json
+config/config.json
+config/recipients.json
 
 # Session data
 *.session
