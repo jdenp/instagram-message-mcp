@@ -27,7 +27,50 @@ class InstagramClient:
 
     def send_dm(self, message: str, user_ids: list[str]) -> None:
         """Send a direct message to the given user IDs."""
-        self._client.direct_send(message, user_ids=user_ids)
+        self._send_dm_raw(message, user_ids)
+
+    def _send_dm_raw(self, message: str, user_ids: list[str]) -> None:
+        """Send DM via raw HTTP POST with explicit UTF-8 form encoding."""
+        import json as json_mod
+        import time
+        import uuid as uuid_mod
+
+        client = self._client
+        uuid_val = str(client.uuid)
+        device_id = client.android_device_id
+        token = str(uuid_mod.uuid4())
+
+        data = {
+            "action": "send_item",
+            "is_x_transport_forward": "false",
+            "send_silently": "false",
+            "is_shh_mode": "0",
+            "send_attribution": "message_button",
+            "client_context": token,
+            "device_id": device_id,
+            "mutation_token": token,
+            "_uuid": uuid_val,
+            "btt_dual_send": "false",
+            "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7",
+            "is_ae_dual_send": "false",
+            "offline_threading_id": token,
+            "text": message,
+            "recipient_users": json_mod.dumps([[int(uid) for uid in user_ids]]),
+        }
+
+        headers = dict(client.base_headers)
+        headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
+
+        api_url = f"https://{client.domain}/api/v1/direct_v2/threads/broadcast/text/"
+        response = client.private.post(
+            api_url,
+            data=data,
+            headers=headers,
+            proxies=client.private.proxies,
+        )
+        if response.status_code != 200:
+            print(f"DM raw send error: {response.status_code} {response.text}")
+        response.raise_for_status()
 
     def read_dms(
         self,
