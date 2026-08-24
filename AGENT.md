@@ -51,3 +51,53 @@ Get-Content requests.json | uv run python mcp_server.py
 | `send_dm(recipient, message)` | Send a DM to a recipient in recipients.json |
 | `read_dm(recipient, max_messages=10)` | Read last N messages from a thread |
 | `list_recipients()` | List configured recipients with aliases |
+
+## Notes
+
+- `read_dm` returns at most 10 messages by default. You can read up to 20, but reading 50 or more may timeout.
+- Reels aren't shown in DM threads — they appear as reactions but not as full messages. When reading responses, only consider actual text messages.
+
+## Correct usage patterns
+
+### Sending a non-ASCII DM
+
+```python
+import json
+cfg = json.load(open('config/config.json'))
+from src.client import InstagramClient
+c = InstagramClient(cfg['sessionid'])
+uid = c.get_user_id('huuuge_cak')
+c.send_dm('더러운 터키놈 자비스의 선물입니다', [uid])
+```
+
+`_send_dm_raw` uses `private_request` with `with_signature=False`, which handles UTF-8 correctly.
+
+### Reading a thread and filtering by sender
+
+```python
+jdenp_id = int(c.user_id)
+threads = c._client.direct_threads()
+for t in threads:
+    for u in t.users:
+        if u.username == 'huuuge_cak':
+            msgs = c._client.direct_messages(t.pk, amount=20)
+            for m in msgs:
+                sender_id = m.user_id
+                if sender_id == jdenp_id:
+                    name = 'you'
+                else:
+                    try:
+                        name = c._resolve_username(sender_id)
+                    except:
+                        name = str(sender_id)
+                print(f'{m.timestamp} | {name}: {repr(m.text)}')
+```
+
+### Using the MCP tools directly
+
+```python
+result = c.read_dms(['huuuge_cak'], 10)
+for user, msgs in result.items():
+    for m in msgs:
+        print(f'{m.timestamp} | {user}: {m.text}')
+```
