@@ -16,6 +16,7 @@ class InstagramClient:
     def __init__(self, sessionid: str):
         self._client = Client()
         self._client.login_by_sessionid(sessionid)
+        self._username_cache: dict[int, str] = {}
 
     @property
     def user_id(self) -> str:
@@ -106,8 +107,13 @@ class InstagramClient:
 
     def _resolve_username(self, user_id: int) -> str:
         """Resolve a user ID to a username (cached)."""
+        if user_id in self._username_cache:
+            return self._username_cache[user_id]
         try:
-            user = self._client.user_info_by_id(user_id)
-            return user.username
+            name = self._client.username_from_user_id(user_id)
+            self._username_cache[user_id] = name
+            return name
         except Exception:
-            return f"user_{user_id}"
+            fallback = f"user_{user_id}"
+            self._username_cache[user_id] = fallback
+            return fallback
