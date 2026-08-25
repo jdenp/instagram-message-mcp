@@ -92,7 +92,10 @@ class InstagramClient:
 
             for msg in messages:
                 sender_username = self._resolve_username(msg.user_id)
-                if sender_username in matching_users:
+                # Include messages from recipients or from the logged-in user
+                is_sender = sender_username in matching_users
+                is_self = int(msg.user_id) == int(self._client.user_id)
+                if is_sender or is_self:
                     if sender_username not in result:
                         result[sender_username] = []
                     result[sender_username].append(
