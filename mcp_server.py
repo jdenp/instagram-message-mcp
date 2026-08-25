@@ -203,14 +203,20 @@ def main():
     print(json.dumps(init_response), flush=True)
 
     # Process requests from stdin
-    for line in sys.stdin:
+    # Read all stdin as bytes, strip UTF-8 BOM if present
+    raw = sys.stdin.buffer.read()
+    if raw.startswith(b'\xef\xbb\xbf'):
+        raw = raw[3:]
+    for line in raw.decode('utf-8').splitlines():
+        if not line.strip():
+            continue
         try:
             request = json.loads(line.strip())
             response = mcp.process_request(request)
             if response:
-                print(json.dumps(response), flush=True)
-        except json.JSONDecodeError:
-            continue
+                print(json.dumps(response, ensure_ascii=False), flush=True)
+        except Exception as e:
+            print(f"Error processing request: {type(e).__name__}: {e}", file=sys.stderr, flush=True)
 
 
 if __name__ == "__main__":
