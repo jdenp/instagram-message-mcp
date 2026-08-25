@@ -25,6 +25,6 @@ class DMSender:
 
     def read_dm(self, recipient: str, max_messages: int = 10) -> dict[str, list[DMMessage]]:
         """Read last N messages from a specific recipient's thread."""
-        # Resolve alias to username if needed
-        username = self._config.aliases.get(recipient, recipient)
-        return self._client.read_dms([username], max_messages)
+        # Use the original username (not alias) so threads match correctly.
+        # The alias is only for display; threads are identified by Instagram usernames.
+        return self._client.read_dms([recipient], max_messages)

@@ -25,6 +25,8 @@ JSON-RPC 2.0 over stdin/stdout. Each request is a newline-delimited JSON object.
 {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"read_dm","arguments":{"recipient":"huuuge_cak","max_messages":5}}}
 ```
 
+**Important:** `read_dm` expects the Instagram **username** (e.g. `huuuge_cak`), not the alias (e.g. `laurence`). Threads are matched by Instagram username, so passing an alias will fail to find the correct thread. Use `list_recipients` to see which entries are usernames vs aliases.
+
 ### Listing recipients
 
 ```json
