@@ -16,8 +16,11 @@ class DMSender:
 
     def send_dm(self, recipient: str, message: str) -> bool:
         """Send message to a specific recipient. Returns True if successful."""
-        # Resolve alias to username if needed
+        # Resolve alias to username if needed (aliases maps username -> alias, so reverse lookup)
         username = self._config.aliases.get(recipient, recipient)
+        if username is recipient and recipient in self._config.aliases.values():
+            # recipient is an alias value, find the corresponding key
+            username = [k for k, v in self._config.aliases.items() if v == recipient][0]
         user_id = self._client.get_user_id(username)
         self._client.send_dm(message, [user_id])
         print(f"Sent to {username}")
