@@ -175,6 +175,10 @@ class InstagramMCP:
         params = request.get("params", {})
         request_id = request.get("id")
 
+        # Notifications carry no id and must not be answered
+        if "id" not in request:
+            return None
+
         if method == "initialize":
             return self.handle_initialize(params, request_id)
         elif method == "tools/list":
@@ -198,20 +202,19 @@ def main():
         print(json.dumps({"jsonrpc": "2.0", "error": {"code": -32603, "message": error_msg}}), flush=True)
         sys.exit(1)
 
-    # Send initialize response first
-    init_response = mcp.handle_initialize({}, 0)
-    print(json.dumps(init_response), flush=True)
-
-    # Process requests from stdin
-    # Read all stdin as bytes, strip UTF-8 BOM if present
-    raw = sys.stdin.buffer.read()
-    if raw.startswith(b'\xef\xbb\xbf'):
-        raw = raw[3:]
-    for line in raw.decode('utf-8').splitlines():
-        if not line.strip():
+    # Read stdin a line at a time; the client holds the pipe open for the whole session
+    first_line = True
+    while True:
+        raw = sys.stdin.buffer.readline()
+        if not raw:
+            break
+        # utf-8-sig strips a leading BOM if the client sent one
+        line = raw.decode('utf-8-sig' if first_line else 'utf-8').strip()
+        first_line = False
+        if not line:
             continue
         try:
-            request = json.loads(line.strip())
+            request = json.loads(line)
             response = mcp.process_request(request)
             if response:
                 print(json.dumps(response, ensure_ascii=False), flush=True)
